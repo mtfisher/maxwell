@@ -7,8 +7,27 @@ import java.util.Date;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DateTimeColumnDef extends ColumnDef {
+	private static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {
+		@Override
+		protected StringBuilder initialValue() {
+			return new StringBuilder();
+		}
+
+		@Override
+		public StringBuilder get() {
+			StringBuilder b = super.get();
+			b.setLength(0);
+			return b;
+		}
+
+	};
+
 	public DateTimeColumnDef(String name, String type, int pos) {
 		super(name, type, pos);
+	}
+
+	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
+		super(name, type, pos, columnLength);
 	}
 
 	private static SimpleDateFormat dateTimeFormatter;
@@ -20,29 +39,71 @@ public class DateTimeColumnDef extends ColumnDef {
 		return dateTimeFormatter;
 	}
 
+	public static int convertNanos(int nanos, Long columnLength, boolean convertStringNanosToNanos) {
+		String strNanos = Integer.toString(nanos);
+		StringBuilder realStrNanos = threadLocalBuilder.get();
+		realStrNanos.append(strNanos);
+
+		// When we have in a datetime .1234 it's actually 123400000 nano secs,
+		// not 1243
+		if ( convertStringNanosToNanos ) {
+			int i = 0;
+			while (i < 9 - strNanos.length()) {
+				realStrNanos.append('0');
+				i++;
+			}
+		}
+
+		nanos = Integer.parseInt(realStrNanos.toString());
+		int micros = nanos / 1000;
+		String strMicros = Integer.toString(micros);
+
+    // 6 is the max precision of datetime2 in MysQL
+		int divideBy = ((int) Math.pow(10, 6 - columnLength));
+
+		return micros / divideBy;
+	}
+
+	public static String timestampToString(Timestamp t, Long columnLength, boolean convertStringNanosToNanos) {
+		int nanos = t.getNanos();
+		if ( nanos == 0 ) {
+			return getDateTimeFormatter().format(t);
+		}
+
+		int fraction = convertNanos(nanos, columnLength, convertStringNanosToNanos);
+		String strFormat = "%0" + columnLength + "d";
+		StringBuilder result = threadLocalBuilder.get();
+		result.append(getDateTimeFormatter().format(t));
+		result.append(".");
+		result.append(String.format(strFormat, fraction));
+
+		return result.toString();
+	}
+
 
 	@Override
 	public boolean matchesMysqlType(int type) {
 		if ( getType().equals("datetime") ) {
 			return type == MySQLConstants.TYPE_DATETIME ||
-				   type == MySQLConstants.TYPE_DATETIME2;
+				type == MySQLConstants.TYPE_DATETIME2;
 		} else {
 			return type == MySQLConstants.TYPE_TIMESTAMP ||
-				   type == MySQLConstants.TYPE_TIMESTAMP2;
+				type == MySQLConstants.TYPE_TIMESTAMP2;
 		}
 	}
 
-	private String formatValue(Object value) {
+	private String formatValue(Object value, boolean convertStringNanosToNanos) {
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
-			if ( value instanceof Long && getType().equals("datetime") )
+			if ( value instanceof Long && getType().equals("datetime") ) {
 				return formatLong(( Long ) value);
-			else if ( value instanceof Timestamp )
-				return getDateTimeFormatter().format(( Timestamp ) value);
-			else if ( value instanceof Date )
+			} else if ( value instanceof Timestamp ) {
+				return timestampToString((Timestamp) value, this.columnLength, convertStringNanosToNanos);
+			} else if ( value instanceof Date ) {
 				return getDateTimeFormatter().format(( Date ) value);
-			else
+			} else {
 				return "";
+			}
 		}
 	}
 
@@ -54,18 +115,18 @@ public class DateTimeColumnDef extends ColumnDef {
 		final int month = (int)(value % 100);
 		final int year = (int)(value / 100);
 
-		return String.format("%04d-%02d-%02d %02d:%02d:%02d",  year, month, day, hour, minute, second);
+		return String.format("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
 	}
 
 
 	@Override
 	public String toSQL(Object value) {
-		return "'" + formatValue(value) + "'";
+		return "'" + formatValue(value, false) + "'";
 	}
 
 
 	@Override
 	public Object asJSON(Object value) {
-		return formatValue(value);
+		return formatValue(value, true);
 	}
 }

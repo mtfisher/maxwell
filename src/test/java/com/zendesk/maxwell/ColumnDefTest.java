@@ -25,6 +25,10 @@ public class ColumnDefTest {
 		return ColumnDef.build("bar", "", type, 1, signed, null);
 	}
 
+	private ColumnDef build(String type, boolean signed, Long columnLength) {
+		return ColumnDef.build("bar", "", type, 1, signed, null, columnLength);
+	}
+
 	@Before
 	public void setUp() throws Exception {
 	}
@@ -185,6 +189,58 @@ public class ColumnDefTest {
 	}
 
 	@Test
+	public void TestDateTimeWithTimestamp() throws ParseException {
+		ColumnDef d = build("datetime", true);
+		assertThat(d, instanceOf(DateTimeColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
+
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
+	}
+
+	@Test
+	public void TestDateTimeWithMillisecprecision() throws ParseException {
+		ColumnDef d = build("datetime", true, 3L);
+		assertThat(d, instanceOf(DateTimeColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
+
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+
+		t.setNanos(123000);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000'"));
+
+		t.setNanos(123000000);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
+
+		t.setNanos(123456789);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
+	}
+
+	@Test
+	public void TestDateTimeWithMicroPrecision() throws ParseException {
+		ColumnDef d = build("datetime", true, 6L);
+		assertThat(d, instanceOf(DateTimeColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
+
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+
+		t.setNanos(123);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000000'"));
+
+		t.setNanos(123000);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000123'"));
+
+		t.setNanos(123456000);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123456'"));
+
+		t.setNanos(123456789);
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123456'"));
+	}
+
+	@Test
 	public void TestTimestamp() throws ParseException {
 		ColumnDef d = build("timestamp", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
@@ -193,6 +249,19 @@ public class ColumnDefTest {
 
 		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
+	}
+
+	@Test
+	public void TestTimestampWithMilliSecPrecision() throws ParseException {
+		ColumnDef d = build("timestamp", true, 3L);
+		assertThat(d, instanceOf(DateTimeColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
+
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+		t.setNanos(123456000);
+
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
 	}
 
 	@Test

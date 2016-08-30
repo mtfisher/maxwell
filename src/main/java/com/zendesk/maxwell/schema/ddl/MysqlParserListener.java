@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MysqlParserListener extends mysqlBaseListener {
-    final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
+		final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
 
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
@@ -32,7 +32,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private ArrayList<String> pkColumns;
 
-	MysqlParserListener(String currentDatabase, TokenStream tokenStream)  {
+	MysqlParserListener(String currentDatabase, TokenStream tokenStream) {
 		this.pkColumns = null; // null indicates no change in primary keys
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
@@ -95,7 +95,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private ColumnPosition getColumnPosition() {
 		// any time there's a possibility of a column position, we'll
-		// want to clear it out so we don't re-use it next time.  visitors might be better in this case.
+		// want to clear it out so we don't re-use it next time visitors might be better in this case.
 		ColumnPosition p = this.columnPosition;
 		this.columnPosition = null;
 
@@ -190,7 +190,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitAlter_rename_table(Alter_rename_tableContext ctx) {
 		alterStatement().newTableName = getTable(ctx.table_name());
-		alterStatement().newDatabase  = getDB(ctx.table_name());
+		alterStatement().newDatabase = getDB(ctx.table_name());
 	}
 
 	@Override
@@ -221,7 +221,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitCreate_like_tbl(Create_like_tblContext ctx) {
 		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
-		tableCreate.likeDB    = getDB(ctx.table_name());
+		tableCreate.likeDB = getDB(ctx.table_name());
 		tableCreate.likeTable = getTable(ctx.table_name());
 	}
 
@@ -274,8 +274,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return r.getText();
 	}
 
-	/* we enter this code twice.  the first time, we gobble up parens.  The
-		   second time, we just have the __MAXWELL__ token, and we can continue.
+	/* we enter this code twice. the first time, we gobble up parens. The
+			 second time, we just have the __MAXWELL__ token, and we can continue.
 		 */
 	@Override
 	public void enterSkip_parens(Skip_parensContext ctx) {
@@ -294,7 +294,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
 		this.pkColumns = new ArrayList<>();
-		for (  Index_columnContext column : ctx.index_column_list().index_columns().index_column() ) {
+		for (Index_columnContext column : ctx.index_column_list().index_columns().index_column() ) {
 			NameContext n = column.name();
 			this.pkColumns.add(unquote(n.getText()));
 		}
@@ -367,12 +367,23 @@ public class MysqlParserListener extends mysqlBaseListener {
 		}
 
 		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
-		ColumnDef c = ColumnDef.build(name,
-					                   colCharset,
-					                   colType.toLowerCase(),
-					                   -1,
-					                   signed,
-					                   enumValues);
+    ColumnDef c;
+    if (columnLength != null) {
+      c = ColumnDef.build(name,
+  														 colCharset,
+  														 colType.toLowerCase(),
+  														 -1,
+  														 signed,
+  														 enumValues,
+  														 columnLength);
+    } else {
+      c = ColumnDef.build(name,
+  														 colCharset,
+  														 colType.toLowerCase(),
+  														 -1,
+  														 signed,
+  														 enumValues);
+    }
 
 		this.columnDefs.add(c);
 
@@ -393,7 +404,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		Table_nameContext newTableContext = ctx.table_name(1);
 
 		TableAlter t = new TableAlter(getDB(oldTableContext), getTable(oldTableContext));
-		t.newDatabase  = getDB(newTableContext);
+		t.newDatabase = getDB(newTableContext);
 		t.newTableName = getTable(newTableContext);
 		this.schemaChanges.add(t);
 	}
