@@ -11,21 +11,12 @@ public abstract class ColumnDef {
 	protected String type;
 
 	protected int pos;
-	protected Long columnLength;
 
 	public ColumnDef() { }
 	public ColumnDef(String name, String type, int pos) {
 		this.name = name;
 		this.type = type;
 		this.pos = pos;
-		this.columnLength = 0L;
-	}
-
-	public ColumnDef(String name, String type, int pos, Long columnLength) {
-		this.name = name;
-		this.type = type;
-		this.pos = pos;
-		this.columnLength = columnLength;
 	}
 
 	public abstract boolean matchesMysqlType(int type);
@@ -36,16 +27,6 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[], Long columnLength) {
-		switch(type) {
-			case "datetime":
-			case "timestamp":
-				return new DateTimeColumnDef(name, type, pos, columnLength);
-			default:
-				return build(name, charset, type, pos, signed, enumValues);
-		}
-	}
-
-	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[]) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -86,7 +67,7 @@ public abstract class ColumnDef {
 			return new DateColumnDef(name, type, pos);
 		case "datetime":
 		case "timestamp":
-			return new DateTimeColumnDef(name, type, pos);
+			return new DateTimeColumnDef(name, type, pos, columnLength);
 		case "year":
 			return new YearColumnDef(name, type, pos);
 		case "time":

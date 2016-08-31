@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MysqlParserListener extends mysqlBaseListener {
-		final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
+	final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
 
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
@@ -367,23 +367,25 @@ public class MysqlParserListener extends mysqlBaseListener {
 		}
 
 		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
-    ColumnDef c;
-    if (columnLength != null) {
-      c = ColumnDef.build(name,
-  														 colCharset,
-  														 colType.toLowerCase(),
-  														 -1,
-  														 signed,
-  														 enumValues,
-  														 columnLength);
-    } else {
-      c = ColumnDef.build(name,
-  														 colCharset,
-  														 colType.toLowerCase(),
-  														 -1,
-  														 signed,
-  														 enumValues);
-    }
+		ColumnDef c;
+		if (columnLength != null) {
+			c = ColumnDef.build(
+				name,
+				colCharset,
+				colType.toLowerCase(),
+				-1,
+				signed,
+				enumValues,
+				columnLength);
+		} else {
+			c = ColumnDef.build(
+				name,
+				colCharset,
+				colType.toLowerCase(),
+				-1,
+				signed,
+				enumValues, null);
+		}
 
 		this.columnDefs.add(c);
 

@@ -30,6 +30,6 @@ public class ColumnDefDeserializer extends JsonDeserializer<ColumnDef> {
 
 			enumValues = (String[]) values.toArray(new String[0]);
 		}
-		return ColumnDef.build(name, charset, type, 0, signed, enumValues);
+		return ColumnDef.build(name, charset, type, 0, signed, enumValues, null);
 	}
 }

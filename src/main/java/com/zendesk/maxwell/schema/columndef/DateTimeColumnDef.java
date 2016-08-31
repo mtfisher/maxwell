@@ -7,6 +7,8 @@ import java.util.Date;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DateTimeColumnDef extends ColumnDef {
+	protected Long columnLength;
+
 	private static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {
 		@Override
 		protected StringBuilder initialValue() {
@@ -22,12 +24,9 @@ public class DateTimeColumnDef extends ColumnDef {
 
 	};
 
-	public DateTimeColumnDef(String name, String type, int pos) {
-		super(name, type, pos);
-	}
-
 	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
-		super(name, type, pos, columnLength);
+		super(name, type, pos);
+		this.columnLength = columnLength;
 	}
 
 	private static SimpleDateFormat dateTimeFormatter;
@@ -93,6 +92,7 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private String formatValue(Object value, boolean convertStringNanosToNanos) {
+    System.out.println("formatValue class: " + value.getClass());
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
 			if ( value instanceof Long && getType().equals("datetime") ) {
@@ -121,12 +121,14 @@ public class DateTimeColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
+    System.out.println("toSQL: ");
 		return "'" + formatValue(value, false) + "'";
 	}
 
 
 	@Override
 	public Object asJSON(Object value) {
+    System.out.println("asJSON: ");
 		return formatValue(value, true);
 	}
 }

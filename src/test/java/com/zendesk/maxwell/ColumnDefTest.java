@@ -22,7 +22,7 @@ import com.google.code.or.common.util.MySQLConstants;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {
-		return ColumnDef.build("bar", "", type, 1, signed, null);
+		return ColumnDef.build("bar", "", type, 1, signed, null, null);
 	}
 
 	private ColumnDef build(String type, boolean signed, Long columnLength) {
@@ -101,7 +101,7 @@ public class ColumnDefTest {
 
 	@Test
 	public void testUTF8String() {
-		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", 1, false, null, null);
 
 		assertThat(d, instanceOf(StringColumnDef.class));
 		byte input[] = "He∆˚ß∆".getBytes();
@@ -112,7 +112,7 @@ public class ColumnDefTest {
 	public void TestUTF8MB4String() {
 		String utf8_4 = "😁";
 
-		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", 1, false, null, null);
 		byte input[] = utf8_4.getBytes();
 		assertThat(d.toSQL(input), is("'😁'"));
 	}
@@ -125,7 +125,7 @@ public class ColumnDefTest {
 		input[2] = Byte.valueOf((byte) 126);
 		input[3] = Byte.valueOf((byte) 126);
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", 1, false, null, null);
 		assertThat((String) d.asJSON(input), is("~~~~"));
 	}
 
@@ -137,7 +137,7 @@ public class ColumnDefTest {
 		input[2] = Byte.valueOf((byte) 169);
 		input[3] = Byte.valueOf((byte) 169);
 
-		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", 1, false, null, null);
 
 		assertThat((String) d.asJSON(input), is("©©©©"));
 	}
