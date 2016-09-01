@@ -82,6 +82,9 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTimeWithLengthCase() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
 		this.savedSchema.save(context.getMaxwellConnection());
 
 		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());

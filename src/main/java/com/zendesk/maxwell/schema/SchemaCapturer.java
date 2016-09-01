@@ -109,8 +109,14 @@ public class SchemaCapturer {
 			String colEnc     = r.getString("CHARACTER_SET_NAME");
 			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
+			Long columnLength;
+
 			// Only available for datetime/timestamp
-			Long columnLength = r.getLong("DATETIME_PRECISION");
+			try {
+				columnLength = r.getLong("DATETIME_PRECISION");
+			} catch ( java.sql.SQLException e ) {
+				columnLength = null;
+			}
 
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				t.pkIndex = i;
