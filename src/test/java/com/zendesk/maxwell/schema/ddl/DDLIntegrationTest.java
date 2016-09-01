@@ -191,6 +191,9 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testDatetimeWithLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
 		String sql[] = {
 			"create TABLE `test_datetime` ( id datetime(3) )"
 		};
@@ -200,6 +203,9 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTimestampWithLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
 		String sql[] = {
 			"create TABLE `test_year` ( id timestamp(3) )"
 		};

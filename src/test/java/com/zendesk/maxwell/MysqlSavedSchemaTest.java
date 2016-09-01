@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -24,20 +26,24 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private BinlogPosition binlogPosition;
 	private MysqlSavedSchema savedSchema;
 
-	String schemaSQL[] = {
-		"delete from `maxwell`.`positions`",
-		"delete from `maxwell`.`schemas`",
-		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
-		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
-		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
-		"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
-		"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)",
-		"CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), t2 timestamp(6))"
+	String ary[] = {
+			"delete from `maxwell`.`positions`",
+			"delete from `maxwell`.`schemas`",
+			"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
+			"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
+			"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
+			"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
+			"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
 	};
+	ArrayList<String> schemaSQL = new ArrayList(Arrays.asList(ary));
+
 	private MaxwellContext context;
 
 	@Before
 	public void setUp() throws Exception {
+		if ( server.getVersion().equals("5.6") )
+			schemaSQL.add("CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), t2 timestamp(6))");
+
 		server.executeList(schemaSQL);
 
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
