@@ -109,6 +109,8 @@ public class SchemaCapturer {
 			String colEnc     = r.getString("CHARACTER_SET_NAME");
 			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
+			// Only available for datetime/timestamp
+			Long columnLength = r.getLong("DATETIME_PRECISION");
 
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				t.pkIndex = i;
@@ -119,7 +121,7 @@ public class SchemaCapturer {
 				enumValues = extractEnumValues(expandedType);
 			}
 
-			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues));
+			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
 			i++;
 		}
 		captureTablePK(t);

@@ -22,9 +22,14 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 			jgen.writeBooleanField("signed", ((BigIntColumnDef) def).isSigned());
 		else if ( def instanceof EnumeratedColumnDef ) {
 			jgen.writeArrayFieldStart("enum-values");
-			for ( String s : ((EnumeratedColumnDef) def).getEnumValues() )
+			for (String s : ((EnumeratedColumnDef) def).getEnumValues())
 				jgen.writeString(s);
 			jgen.writeEndArray();
+		} else if ( def instanceof DateTimeColumnDef ) {
+			// columnLength is a Long but technically, it' not that long. It it were, we could
+			// need to use a string to represent it, instead of an integer, to avoid issues
+			// with Javascript when parsing long integers.
+			jgen.writeNumberField("column-length", ((DateTimeColumnDef) def).columnLength);
 		}
 		jgen.writeEndObject();
 	}

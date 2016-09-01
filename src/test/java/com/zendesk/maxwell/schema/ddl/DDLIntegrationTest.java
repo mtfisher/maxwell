@@ -190,6 +190,24 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testDatetimeWithLength() throws Exception {
+		String sql[] = {
+			"create TABLE `test_datetime` ( id datetime(3) )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testTimestampWithLength() throws Exception {
+		String sql[] = {
+			"create TABLE `test_year` ( id timestamp(3) )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testBooleans() throws Exception {
 		String sql[] = {
 			"create TABLE `test_boolean` ( b1 bool, b2 boolean )"

@@ -81,6 +81,14 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[1].getName(), is("account_id"));
 		assertThat(columns[1], instanceOf(IntColumnDef.class));
 		assertThat(((IntColumnDef) columns[1]).isSigned(), is(false));
+
+		assertThat(columns[10].getName(), is("timestamp2_field"));
+		assertThat(columns[10], instanceOf(DateTimeColumnDef.class));
+		assertThat(((DateTimeColumnDef) columns[10]).getColumnLength(), is(3L));
+
+		assertThat(columns[11].getName(), is("datetime2_field"));
+		assertThat(columns[11], instanceOf(DateTimeColumnDef.class));
+		assertThat(((DateTimeColumnDef) columns[11]).getColumnLength(), is(6L));
 	}
 
 	@Test

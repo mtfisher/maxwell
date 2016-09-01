@@ -38,26 +38,33 @@ public class DateTimeColumnDef extends ColumnDef {
 		return dateTimeFormatter;
 	}
 
-	public static int convertNanos(int nanos, Long columnLength, boolean convertStringNanosToNanos) {
-		String strNanos = Integer.toString(nanos);
-		StringBuilder realStrNanos = threadLocalBuilder.get();
-		realStrNanos.append(strNanos);
-
+	// Truncates the number of nano secs to the column length.
+	// 123 456 789 nano secs for:
+	// - col length 3 -> 123 ;
+	// - col length 6 -> 123 456.
+	// 123 456 nano secs (123 micro secs):
+	// - col length 3 -> 0 (milli secs)
+	// - col length 6 -> 123 (micro secs).
+	public static int truncateNanosToColumnLength(int nanos, Long columnLength, boolean convertStringNanosToNanos) {
 		// When we have in a datetime .1234 it's actually 123400000 nano secs,
 		// not 1243
 		if ( convertStringNanosToNanos ) {
+			String strNanos = Integer.toString(nanos);
+			StringBuilder realStrNanos = threadLocalBuilder.get();
+			realStrNanos.append(strNanos);
+
 			int i = 0;
 			while (i < 9 - strNanos.length()) {
 				realStrNanos.append('0');
 				i++;
 			}
+
+			nanos = Integer.parseInt(realStrNanos.toString());
 		}
 
-		nanos = Integer.parseInt(realStrNanos.toString());
 		int micros = nanos / 1000;
-		String strMicros = Integer.toString(micros);
 
-    // 6 is the max precision of datetime2 in MysQL
+		// 6 is the max precision of datetime2 in MysQL
 		int divideBy = ((int) Math.pow(10, 6 - columnLength));
 
 		return micros / divideBy;
@@ -69,7 +76,7 @@ public class DateTimeColumnDef extends ColumnDef {
 			return getDateTimeFormatter().format(t);
 		}
 
-		int fraction = convertNanos(nanos, columnLength, convertStringNanosToNanos);
+		int fraction = truncateNanosToColumnLength(nanos, columnLength, convertStringNanosToNanos);
 		String strFormat = "%0" + columnLength + "d";
 		StringBuilder result = threadLocalBuilder.get();
 		result.append(getDateTimeFormatter().format(t));
@@ -92,7 +99,6 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private String formatValue(Object value, boolean convertStringNanosToNanos) {
-    System.out.println("formatValue class: " + value.getClass());
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
 			if ( value instanceof Long && getType().equals("datetime") ) {
@@ -121,14 +127,14 @@ public class DateTimeColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-    System.out.println("toSQL: ");
 		return "'" + formatValue(value, false) + "'";
 	}
 
 
 	@Override
 	public Object asJSON(Object value) {
-    System.out.println("asJSON: ");
 		return formatValue(value, true);
 	}
+
+	public Long getColumnLength() { return columnLength ; }
 }

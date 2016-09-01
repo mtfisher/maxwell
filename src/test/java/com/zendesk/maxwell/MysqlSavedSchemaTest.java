@@ -17,6 +17,7 @@ import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
@@ -30,7 +31,8 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
 		"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
-		"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
+		"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)",
+		"CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), t2 timestamp(6))"
 	};
 	private MaxwellContext context;
 
@@ -76,6 +78,20 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		assertThat(t.getPKList().get(0), is("Col2"));
 		assertThat(t.getPKList().get(1), is("COL3"));
+	}
+
+	@Test
+	public void testTimeWithLengthCase() throws Exception {
+		this.savedSchema.save(context.getMaxwellConnection());
+
+		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
+
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		DateTimeColumnDef cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("dt2");
+		assertThat(cd.getColumnLength(), is(3L));
+
+		cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("t2");
+		assertThat(cd.getColumnLength(), is(6L));
 	}
 
 	@Test

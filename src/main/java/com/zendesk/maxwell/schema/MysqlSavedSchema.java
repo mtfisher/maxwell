@@ -41,7 +41,7 @@ public class MysqlSavedSchema {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
-		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private final CaseSensitivity sensitivity;
 	private final Long serverID;
@@ -229,6 +229,13 @@ public class MysqlSavedSchema {
 					}
 
 					columnData.add(enumValuesSQL);
+
+					if ( c instanceof DateTimeColumnDef ) {
+						Long columnLength = ((DateTimeColumnDef) c).getColumnLength();
+						columnData.add(columnLength);
+					} else {
+						columnData.add(null);
+					}
 				}
 
 				if ( columnData.size() > 1000 )
@@ -245,8 +252,8 @@ public class MysqlSavedSchema {
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
 		String insertColumnSQL = this.columnInsertSQL;
 
-		for (int i=1; i < columnData.size() / 7; i++) {
-			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?)";
+		for (int i=1; i < columnData.size() / 8; i++) {
+			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?)";
 		}
 
 		PreparedStatement columnInsert = conn.prepareStatement(insertColumnSQL);
@@ -428,7 +435,8 @@ public class MysqlSavedSchema {
 					cRS.getString("name"), cRS.getString("charset"),
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
-					enumValues);
+					enumValues,
+					Long.valueOf(cRS.getInt("column_length")));
 			t.addColumn(c);
 		}
 
