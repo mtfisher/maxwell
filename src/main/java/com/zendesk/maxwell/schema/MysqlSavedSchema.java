@@ -155,15 +155,16 @@ public class MysqlSavedSchema {
 			throw new RuntimeException("Couldn't serialize " + deltas + " to JSON.");
 		}
 
-		return executeInsert(insert,
-		                     this.baseSchemaID,
-		                     deltaString,
-		                     position.getFile(),
-		                     position.getOffset(),
-		                     serverID,
-		                     schema.getCharset(),
-		                     SchemaStoreVersion,
-							 getPositionSHA());
+		return executeInsert(
+				insert,
+				this.baseSchemaID,
+				deltaString,
+				position.getFile(),
+				position.getOffset(),
+				serverID,
+				schema.getCharset(),
+				SchemaStoreVersion,
+				getPositionSHA());
 
 	}
 
