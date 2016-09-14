@@ -86,7 +86,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|amqp" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "amqp_server", "ampq server for 'ampq' producer formated as HOST" ).withRequiredArg();
 		parser.accepts( "amqp_port", "ampq server port for 'ampq' producer formated as PORT" ).withRequiredArg();
