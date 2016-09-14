@@ -33,6 +33,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
+	
+	public String amqpServer;
+	public String amqpPort;
+	public String amqpExchange;
+	public String amqpRoutingKey;
+	
 	public String log_level;
 
 	public String clientID;
@@ -82,6 +88,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
+		parser.accepts( "amqp_server", "ampq server for 'ampq' producer formated as HOST" ).withRequiredArg();
+		parser.accepts( "amqp_port", "ampq server port for 'ampq' producer formated as PORT" ).withRequiredArg();
+		parser.accepts( "amqp_exchange", "name of the exchange or queue you wish to push to" ).withRequiredArg();
+		parser.accepts( "amqp_routing_key", "name of the routing key you wish to push to" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
@@ -243,6 +253,10 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
+		this.amqpServer			= fetchOption("amqp_server", options, properties, null);
+		this.amqpPort			= fetchOption("amqp_port", options, properties, null);
+		this.amqpExchange       = fetchOption("amqp_exchange", options, properties, null);
+		this.amqpRoutingKey     = fetchOption("amqp_routing_key", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
